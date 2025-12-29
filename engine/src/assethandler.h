@@ -21,7 +21,8 @@
 #include "ezrender.h"
 #include "sprite.h"
 
-constexpr string_static GFX_DIR = "M:/source/MaximusGameEngine/gfx";
+extern string_static uGetGraphicsDirectory();
+
 
 enum AssetGroupID : byte {
 	ASSET_GROUP_NONE = 0,
@@ -59,9 +60,9 @@ struct Asset {
 			return true;
 		}
 		//SDL_Log("mFileName: %s", mFileName);
-		SDL_Log("Trying to load file! (filename: %s/%s)", GFX_DIR, mFileName);
+		SDL_Log("Trying to load file! (filename: %s/%s)", uGetGraphicsDirectory(), mFileName);
 		char s[128];
-		SDL_snprintf(s, 128, "%s/%s", GFX_DIR, mFileName);
+		SDL_snprintf(s, 128, "%s/%s", uGetGraphicsDirectory(), mFileName);
 		File file; //Don't use initializer, it breaks everything.
 		file.OpenFile(s, o_read);
 
@@ -108,7 +109,7 @@ struct Asset {
 			}
 			string_static fileName = file.uGetFileName();
 			file.Close();
-			file.OpenFileFormatted(o_read, "%s.png", fileName);
+			file.OpenFileFormatted(o_read, "%s/%s.png", uGetGraphicsDirectory(), fileName);
 			if (!file.uIsOpen()) {
 				LOAD_DEFAULT;
 			}

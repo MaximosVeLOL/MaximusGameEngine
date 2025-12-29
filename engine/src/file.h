@@ -12,7 +12,7 @@ enum OperationMode {
 	o_all
 };
 
-constexpr Uint8 filename_length = 64;
+constexpr ushort filename_length = 128; //Paths can get super long...
 
 constexpr Uint8 ulong_size = sizeof(ulong);
 
@@ -31,14 +31,24 @@ struct File {
 	string_static uGetFileName() {
 		char* returnValue = new char[filename_length];
 		memset(returnValue, '!', filename_length);
-		for (byte i = 0; i < SDL_strlen(mFileName); i++) {
-			if (mFileName[i] == '.') {
-				returnValue[i] = '\0';
-				return returnValue;
+		byte returnValue_index = 0;
+		short startI = SDL_strlen(mFileName);
+		//Find where the directories end, and the filename starts
+		for (; startI >= 0; startI--) {
+			if (mFileName[startI] == '/' || mFileName[startI] == '\\') {
+				SDL_Log("Found ending point! %d", startI);
+				startI++;
+				break;
 			}
-			returnValue[i] = mFileName[i];
 		}
-		return nullptr;
+		while (mFileName[startI + returnValue_index] != '.') {
+			//SDL_Log("Current: %c", mFileName[startI + returnValue_index] );
+			returnValue[returnValue_index] = mFileName[startI + returnValue_index];
+			returnValue_index++;
+		}
+		returnValue[returnValue_index] = '\0';
+		SDL_Log("uGetFileName: %s", returnValue);
+		return returnValue;
 	}
 
 	string_static uGetFileExtension() {

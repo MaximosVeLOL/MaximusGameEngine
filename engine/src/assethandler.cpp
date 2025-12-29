@@ -4,10 +4,10 @@
 DefaultAssets mDefault;
 void InitializeDefaultTextures() {
 	File f;
-	f.OpenFileFormatted(o_read, "%s/invalid.png", GFX_DIR);
+	f.OpenFileFormatted(o_read, "%s/invalid.png", uGetGraphicsDirectory());
 	mDefault.mTexture = SDL_LoadPNG_IO(f.mCurrent, false);
 	f.Close();
-	f.OpenFileFormatted(o_read, "%s/invalid.wav", GFX_DIR);
+	f.OpenFileFormatted(o_read, "%s/invalid.wav", uGetGraphicsDirectory() );
 	mDefault.mAudio = MIX_LoadAudio_IO(gAudio->mMixer, f.mCurrent, true, false);
 	f.Close();
 	mDefault.mSprite = new Sprite();
@@ -18,6 +18,25 @@ void InitializeDefaultTextures() {
 	c->height = 64;
 	c->frame_delay = 10;
 	c->frame_amount = 2;
+}
+
+string_static uGetGraphicsDirectory() {	
+	static string_editable returnValue = nullptr;
+	if (!returnValue) {
+		string_editable curDir = SDL_GetCurrentDirectory();
+		ushort size = SDL_strlen(curDir) + 4;
+		returnValue = new char[size];
+		SDL_snprintf(returnValue, size, "%sgfx", curDir);
+		returnValue[SDL_strlen(returnValue) + 1] = '\0';
+		//SDL_Log("returnValue: %s", returnValue);
+		SDL_free(curDir);
+	}
+
+	//memset(returnValue, '!', size);
+	
+
+
+	return returnValue;
 }
 
 bool uFileExtensionEquals(string_static pFileName, string_static pTargetExtension) {
@@ -59,3 +78,5 @@ AssetHandler::AssetHandler() {
 	InitializeDefaultTextures();
 
 }
+
+

@@ -150,6 +150,10 @@ public:
 			cRenderRect(transAsRect, true);
 		}
 	}
+
+	void cRenderTileset() {
+
+	}
 	
 
 

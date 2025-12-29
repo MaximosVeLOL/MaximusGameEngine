@@ -28,8 +28,10 @@ out/
 vendored/
 build/
 emscripten/
-graphics/
-
+emc/
+gfx/
+compile.bat
+compile_emscripten.bat
 
 
 
