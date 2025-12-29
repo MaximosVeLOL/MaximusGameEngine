@@ -13,14 +13,10 @@
 #pragma endregion
 
 #pragma region Extra Settings
-#define WINDOW_WIDTH 960
-#define WINDOW_HEIGHT 540
 
-#define WINDOW_WIDTH_CENTER (WINDOW_WIDTH / 2)
-#define WINDOW_HEIGHT_CENTER (WINDOW_HEIGHT / 2)
+#define RENDER_WIDTH 960
+#define RENDER_HEIGHT 540
 
-#define RENDER_WIDTH WINDOW_WIDTH
-#define RENDER_HEIGHT WINDOW_HEIGHT
 #pragma endregion
 
 #define ERROR(message) \
@@ -36,6 +32,7 @@ typedef unsigned long long ulong; //A regular long is an int.
 typedef const char* string_static;
 typedef char* string_editable;
 typedef std::string string_easy;
+#define STATIC_AS_EDITABLE(message) (char *)message
 
 //Non SDL-specific things
 
@@ -62,6 +59,7 @@ struct TRect {
 	T w = T();
 	T h = T();
 
+	TRect() {}
 	TRect(T pX, T pY, T pW, T pH) : x(pX), y(pY), w(pW), h(pH) {}
 
 	operator SDL_Rect() {

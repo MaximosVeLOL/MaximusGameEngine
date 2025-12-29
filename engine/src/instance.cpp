@@ -1,13 +1,17 @@
 #include "instance.h"
 #include "ezrender.h"
 #include "world.h"
-//#include "mgui.h"
+#include "mgui.h"
+#include "input.h"
 Instance* gInstance = nullptr;
+
+
+
 
 void Instance::DoRendering() {
 	gEzRender->RenderStart();
 	if(gCurrentWorld) gCurrentWorld->RenderAllObjects();
-	//if(MGUI::gCurrentCanvas) MGUI::gCurrentCanvas->UpdateElements();
+	if(gCurrentCanvas) gCurrentCanvas->RenderElements();
 	gEzRender->RenderEnd();
 
 }
@@ -18,7 +22,7 @@ void Instance::Update() {
 		gEzRender->cSetDrawColor(255);
 		SDL_RenderClear(gEzRender->mRenderer);
 		gEzRender->cSetDrawColor();
-		SDL_RenderDebugText(gEzRender->mRenderer, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, "An error has occured, please restart the app.");
+		SDL_RenderDebugText(gEzRender->mRenderer, mWidth / 2, mHeight / 2, "An error has occured, please restart the app.");
 		gEzRender->RenderEnd();
 		return;
 	}
@@ -31,12 +35,19 @@ void Instance::Update() {
 	if (gCurrentWorld) {
 		gCurrentWorld->UpdateAllObjects();
 	}
+	if (gCurrentCanvas) {
+		gCurrentCanvas->UpdateElements();
+	}
+	if (gInput) {
+		gInput->UpdateAll();
+	}
+
 	DoRendering();
 
 
 	mCurrentTicks = SDL_GetTicks();
 	if (mCurrentTicks - mStartingTicks >= 1000) {
-		SDL_Log("Frames in one second: %d", pCurrentFPS);
+		//SDL_Log("Frames in one second: %d", pCurrentFPS);
 		string_easy asStr = std::to_string(pCurrentFPS);
 #ifdef COMOPT_C_CLIENT
 		SDL_SetWindowTitle(mWindow, asStr.c_str());
@@ -62,7 +73,9 @@ Instance::Instance() {
 		SDL_Quit();
 	}
 #if COMOPT_C_CLIENT
-	mWindow = SDL_CreateWindow("Test", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE);
+	mWidth = 960;
+	mHeight = 540;
+	mWindow = SDL_CreateWindow("Test", mWidth, mHeight, SDL_WINDOW_RESIZABLE);
 	if (!mWindow) {
 		SDL_Log("Failed to initialize! (Window creation)");
 		SDL_Quit();

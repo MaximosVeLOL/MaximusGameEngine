@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common.h"
-
+#include "world.h"
 constexpr byte MAX_PLAYERS = 4;
 
 enum InputCode {
@@ -38,9 +38,14 @@ public:
 	byte mMouseState = SDL_BUTTON_LEFT;
 	byte mPreviousMouseState = SDL_BUTTON_LEFT;
 
-	Vector2 GetMousePos() {
-		return Vector2(mMouseX, mMouseY);
+	Vector2 GetMousePos(bool gamePos = true) {
+		if (gamePos && gCurrentWorld) {
+			return Vector2(mMouseX + gCurrentWorld->mCameraPosition.x, mMouseY + gCurrentWorld->mCameraPosition.y);
+		}
+		else return Vector2(mMouseX, mMouseY);
 	}
+
+	
 
 	bool GetMouseDown(SDL_MouseButtonFlags pWhichButton) {
 		return mMouseState & SDL_BUTTON_MASK(pWhichButton) && mPreviousMouseState != mMouseState;
@@ -76,7 +81,7 @@ public:
 
 	void UpdateAll() {
 		mPreviousMouseState = mMouseState;
-		mMouseState = SDL_GetMouseState(&mMouseX, &mMouseX);
+		mMouseState = SDL_GetMouseState(&mMouseX, &mMouseY);
 
 		mKeyboardState = SDL_GetKeyboardState(NULL);
 		for (byte layerI = 0; layerI < MAX_PLAYERS; layerI++) {

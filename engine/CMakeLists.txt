@@ -7,6 +7,8 @@ message("Compiling MaxEngine's engine!")
 file(GLOB ENG_SRC 
 	"src/*.cpp"
 	"src/*.h"
+	"src/*/*.cpp"
+	"src/*/*.h"
 )
 
 foreach(s ${ENG_SRC})
@@ -15,7 +17,7 @@ endforeach()
 
 # Create your game executable target as usual
 add_executable(engine WIN32 main.cpp ${ENG_SRC})
-#add_library(engine SHARED main.cpp  ${ENG_SRC})
+#add_library(engine SHARED ${ENG_SRC})
 
 # Link to the actual SDL3 library.
 #target_include_directories(engine PRIVATE "${CMAKE_SOURCE_DIR}/engine/src" )

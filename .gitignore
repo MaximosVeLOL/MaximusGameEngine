@@ -28,6 +28,7 @@ out/
 vendored/
 build/
 emscripten/
+graphics/
 
 
 

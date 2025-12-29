@@ -5,6 +5,9 @@
 #include "instance.h"
 #endif
 
+#include "sprite.h"
+#include "object.h"
+
 /* This renderer is made to make rendering easier.
 * So if you don't want rendering, then its done!
 * If you don't want to use SDL, then its done!
@@ -23,7 +26,7 @@ public:
 
 	void RenderStart() {
 #if COMOPT_R_USE_HA
-		SDL_SetRenderDrawColor(mRenderer, 255, 0, 255, 255);
+		SDL_SetRenderDrawColor(mRenderer, 0, 255, 0, 255);
 		SDL_RenderClear(mRenderer);
 #else
 
@@ -108,6 +111,44 @@ public:
 
 	void cRenderText(float x, float y, string_static format, ...) {
 		SDL_RenderDebugTextFormat(mRenderer, x, y, format);
+	}
+
+	void cRenderObject(Vector2 pCameraPos, MaxObject *pObject) {
+		Rect transAsRect = {
+			static_cast<int>(pObject->mTransform.position.x - pCameraPos.x),
+			static_cast<int>(pObject->mTransform.position.y - pCameraPos.y),
+			static_cast<int>(pObject->mTransform.width),
+			static_cast<int>(pObject->mTransform.height),
+		};
+		SDL_FRect compilerFix = transAsRect;
+
+
+
+		if (pObject->mUseSprite) {
+			SDL_FRect compilerFix = transAsRect;
+			Sprite& s = pObject->mSprite;
+			Cell& sC = s.mCells[s.mCellIndex];
+
+
+			ushort textureOffset = 0;
+			if (s.mCellIndex > 0) {
+				for (short i = s.mCellIndex - 1; i >= 0; i--) {
+					textureOffset += s.mCells[i].height;
+				}
+			}
+
+			SDL_FRect texPos = {
+				static_cast<float>(sC.width * s.mFrame_index),
+				static_cast<float>(textureOffset),
+				static_cast<float>(sC.width),
+				static_cast<float>(sC.height),
+			};
+			SDL_RenderTextureRotated(mRenderer, pObject->mSprite.mTexturePage, &texPos, &compilerFix, pObject->mTransform.rotation, NULL, (pObject->mTransform.direction == 1 ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL) );
+		}
+		else {
+			cSetDrawColor(255, 0, 0, 255);
+			cRenderRect(transAsRect, true);
+		}
 	}
 	
 

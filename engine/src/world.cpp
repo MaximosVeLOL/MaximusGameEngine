@@ -37,6 +37,16 @@ bool IsColliding(bool useXAxis, Vector2 firstPoint, ushort firstWidth, ushort fi
 	}
 }
 
+MaxObject* World::uGetObjectInPoint(Vector2 pPoint) {
+	for (olimit i = 0; i < mObjectCount; i++) {
+		MaxObject& cur = *mObjects[i];
+		if (pPoint.x >= cur.mTransform.position.x && pPoint.x <= cur.mTransform.position.x + cur.mTransform.width && pPoint.y >= cur.mTransform.position.y && pPoint.y <= cur.mTransform.position.y + cur.mTransform.height) {
+			return mObjects[i];
+		}
+	}
+	return nullptr;
+}
+
 void World::UpdateAllObjects() {
 	for (olimit i = 0; i < mObjectCount; i++) {
 		MaxObject& cur = *mObjects[i];
@@ -89,6 +99,7 @@ void World::RenderAllObjects() {
 		return;
 	gEzRender->cSetDrawColor(0, 255, 0, 255);
 	for (olimit i = 0; i < mObjectCount; i++) {
-		gEzRender->cRenderRect(mObjects[i]->mTransform, true);
+		//gEzRender->cRenderRect(mObjects[i]->mTransform, true);
+		gEzRender->cRenderObject(mCameraPosition, mObjects[i] );
 	}
 }

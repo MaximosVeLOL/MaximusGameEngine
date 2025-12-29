@@ -19,7 +19,7 @@ add_executable(utilities WIN32 main.cpp ${ENG_SRC})
 
 # Link to the actual SDL3 library.
 #target_include_directories(utilities PRIVATE "${CMAKE_SOURCE_DIR}/utilities/src" )
-target_link_libraries(utilities PRIVATE utilities)
+target_link_libraries(utilities PRIVATE engine)
 target_link_libraries(utilities PRIVATE SDL3::SDL3)
 target_link_libraries(utilities PRIVATE SDL3_mixer::SDL3_mixer)
 

@@ -12,7 +12,7 @@ enum OperationMode {
 	o_all
 };
 
-constexpr Uint8 filename_length = 100;
+constexpr Uint8 filename_length = 64;
 
 constexpr Uint8 ulong_size = sizeof(ulong);
 
@@ -29,25 +29,23 @@ struct File {
 	}
 
 	string_static uGetFileName() {
-		string_editable returnValue = new char[sizeof(mFileName)];
-		returnValue[0] = '!';
-		returnValue[1] = '!';
-		returnValue[2] = '!';
+		char* returnValue = new char[filename_length];
+		memset(returnValue, '!', filename_length);
 		for (byte i = 0; i < SDL_strlen(mFileName); i++) {
-			if (mFileName[i] == '.') break;
+			if (mFileName[i] == '.') {
+				returnValue[i] = '\0';
+				return returnValue;
+			}
 			returnValue[i] = mFileName[i];
 		}
-
-		return returnValue;
+		return nullptr;
 	}
 
 	string_static uGetFileExtension() {
-		string_editable returnValue = new char[sizeof(mFileName)];
-		returnValue[0] = '!';
-		returnValue[1] = '!';
-		returnValue[2] = '!';
+		char* returnValue = new char[filename_length];
+		memset(returnValue, '!', filename_length);
 		bool use = false;
-		for (byte i = 0; i < SDL_strlen(mFileName); i++) {
+		for (byte i = 0; i < sizeof(mFileName); i++) {
 			if (use) {
 				returnValue[i] = mFileName[i];
 			}
@@ -60,33 +58,41 @@ struct File {
 	}
 
 
-	void ReadNumber(void* output) {
+	byte ReadByte() {
 		if (!mCurrent) {
-			ERROR("Failed to read! (file isn't open)");
+			SDL_Log("Failed to read! (file isn't open)");
 		}
-
-		byte size = sizeof(output);
-		byte readBytes = 0xFF;
-		switch (size) {
-		case 1: //A byte
-			readBytes = SDL_ReadIO(mCurrent, output, 1);
-			break;
-
-		case 2: //A short
-			readBytes = SDL_ReadIO(mCurrent, output, 2);
-			break;
-
-		case 4: //An int
-			readBytes = SDL_ReadIO(mCurrent, output, 4);
-			break;
-		case ulong_size : //A long 
-			readBytes = SDL_ReadIO(mCurrent, output, ulong_size);
-			break;
+		byte returnValue = 0;
+		byte readBytes = SDL_ReadIO(mCurrent, &returnValue, 1);
+		if (readBytes != 1) {
+			SDL_Log("Failed to read! (read bytes not equal to what needed)");
+			return 0;
 		}
-
-		if (readBytes < size) {
-			ERROR("Failed to read! (read bytes less than given)");
+		return returnValue;
+	}
+	ushort ReadShort() {
+		if (!mCurrent) {
+			SDL_Log("Failed to read! (file isn't open)");
 		}
+		ushort returnValue = 0;
+		ushort readushorts = SDL_ReadIO(mCurrent, &returnValue, 2);
+		if (readushorts != 2) {
+			SDL_Log("Failed to read! (read ushorts not equal to what needed)");
+			return 0;
+		}
+		return returnValue;
+	}
+	uint ReadInt() {
+		if (!mCurrent) {
+			SDL_Log("Failed to read! (file isn't open)");
+			return 0;
+		}
+		uint returnValue = 0;
+		uint readuints = SDL_ReadIO(mCurrent, &returnValue, 4);
+		if (readuints != 4) {
+			SDL_Log("Failed to read! (read uints not equal to what needed)");
+		}
+		return returnValue;
 	}
 
 	void ReadData(void* output) {
@@ -99,9 +105,17 @@ struct File {
 		}
 	}
 
-	string_static ReadString(uint size) {
-		void* returnValue = SDL_malloc(size);
-		SDL_ReadIO(mCurrent, returnValue, size);
+	string_static ReadString(ushort size) {
+		if (!mCurrent) {
+			SDL_Log("Failed to read string! (file isn't open)");
+			return "INVALID";
+		}
+		char *returnValue = new char[size];
+		byte readBytes = SDL_ReadIO(mCurrent, returnValue, size);
+		if (readBytes != size) {
+			SDL_Log("Failed to read string (read bytes not equal to needed)");
+			return "INVALID";
+		}
 		return (string_static)returnValue;
 	}
 
@@ -214,14 +228,26 @@ struct File {
 	}
 
 	void OpenFileFormatted(OperationMode mode, string_static format, ...) {
-		char formatted[filename_length] = "";
-		SDL_snprintf(formatted, filename_length, format);
-		OpenFile(formatted, mode);
+		//SDL_Log("Opening formatted string...");
+		// Use stack buffer sized by filename_length (constexpr)
+		char s[filename_length] = {'!'};
+
+		va_list args;
+		va_start(args, format);
+		// SDL_vsnprintf writes at most filename_length bytes including the null terminator.
+		SDL_vsnprintf(s, filename_length, format, args);
+		va_end(args);
+
+		SDL_Log("file name: %s", s);
+		OpenFile(s, mode);
 	}
 
 	void Close() {
+		mFileName = nullptr;
+		mInfo = { SDL_PATHTYPE_NONE, 0, 0, 0, 0 };
 		SDL_FlushIO(mCurrent); //Takes some time, wastes performance.
 		SDL_CloseIO(mCurrent);
+		mCurrent = nullptr;
 	}
 
 	File() {}
@@ -231,8 +257,16 @@ struct File {
 	File(OperationMode mode, string_static format, ...) {
 		OpenFileFormatted(mode, format);
 	}
+	File(string_static mFileName, OperationMode mode) {
+		OpenFile(mFileName, mode);
+	}
 
 	operator SDL_IOStream* () {
 		return mCurrent;
+	}
+
+	~File() {
+		Close();
+
 	}
 };

@@ -2,6 +2,7 @@
 #define __OBJECT_H__
 
 #include "common.h"
+#include "sprite.h"
 
 struct Transform {
 	Vector2 position;
@@ -35,15 +36,17 @@ private:
 
 
 public:
-	
-
 
 	bool mIsActive = true;
 
 	bool mUsePhysics = true;
+	bool mStatic = true;
 	bool mIsSolid = true;
 
 	Transform mTransform;
+
+	Sprite mSprite;
+	bool mUseSprite = false;
 
 	virtual void Step() {
 
@@ -51,10 +54,11 @@ public:
 
 	void Update() {
 		if (!mIsActive) return;
+		if (mUseSprite) mSprite.Update();
 		Step();
 	}
 
-	MaxObject() {}
+	MaxObject();
 
 };
 

@@ -3,24 +3,53 @@
 class MaxObject;
 #include "common.h"
 
-typedef byte olimit;
-constexpr olimit OBJECT_LIMIT = 100;
+typedef uint olimit;
+constexpr olimit OBJECT_LIMIT = 10000;
+
+
+
+class WorldSpace {
+public:
+
+	MaxObject* staticObjects;
+	
+
+	//When we need to load assets needed
+	virtual void Precache() {
+
+	}
+};
+
+
+
 
 class World {
 	MaxObject* mObjects[OBJECT_LIMIT] = { nullptr };
-	olimit mObjectCount = 0;
 
 	byte mGravity = 1;
-	Vector2 mCameraPosition;
 
 public:
+	olimit mObjectCount = 0;
+
+	Vector2 mCameraPosition;
+
+	Color mBGColor = {
+		0,
+		255,
+		0,
+		255
+	};
 
 	void AddObject(MaxObject* object) {
+		if (mObjectCount >= OBJECT_LIMIT) {
+			ERROR("We are above the object limit!");
+		}
 		mObjects[mObjectCount] = object;
 		mObjectCount++;
-		if (mObjectCount > OBJECT_LIMIT) {
-		}
+
 	}
+
+	MaxObject* uGetObjectInPoint(Vector2 pPoint);
 
 
 	void UpdateAllObjects();
@@ -34,9 +63,6 @@ public:
 struct StaticMaxObject {
 	const char* ID = "";
 	Vector2 position;
-};
-
-struct WorldSpace {
 };
 
 extern World* gCurrentWorld;
