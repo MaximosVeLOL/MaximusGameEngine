@@ -1,6 +1,6 @@
 project("engine")
 
-message("Compiling MaxEngine's engine!")
+#message("Compiling MaxEngine's engine!")
 
 
 
@@ -11,12 +11,13 @@ file(GLOB ENG_SRC
 	"src/*/*.h"
 )
 
-foreach(s ${ENG_SRC})
-	message(STATUS "Got source file: ${s}!")
-endforeach()
+#foreach(s ${ENG_SRC})
+#	message(STATUS "Got source file: ${s}!")
+#endforeach()
 
 # Create your game executable target as usual
 add_executable(engine WIN32 main.cpp ${ENG_SRC})
+
 #add_library(engine SHARED ${ENG_SRC})
 
 # Link to the actual SDL3 library.

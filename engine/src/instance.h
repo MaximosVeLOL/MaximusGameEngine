@@ -28,11 +28,12 @@ public:
 	}
 
 	void UpdateWindowInformation() {
+#if COMOPT_C_CLIENT
 		int w = 0, h = 0;
 		SDL_GetWindowSize(mWindow, &w, &h);
 		mWidth = static_cast<ushort>(w);
 		mHeight = static_cast<ushort>(h);
-
+#endif
 	}
 
 	float GetDeltaTime() {

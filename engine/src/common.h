@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __COMMON_H__
+#define __COMMON_H__
 
 #include <SDL3/SDL.h>
 #include <string>
@@ -6,9 +7,10 @@
 #pragma region Compiler options
 
 //Use hardware acceleration
-#define COMOPT_R_USE_HA 1 
+#define COMOPT_R_USE_HA 1
 #define COMOPT_R_USE 1
 #define COMOPT_C_CLIENT 1
+#define COMOPT_C_USE_ASSET 1
 
 #pragma endregion
 
@@ -103,3 +105,6 @@ struct TVector2 {
 typedef TVector2<float> Vector2;
 typedef TVector2<int> Vector2Int;
 typedef TVector2<short> Vector2Short;
+
+
+#endif

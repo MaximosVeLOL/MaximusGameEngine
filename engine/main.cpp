@@ -46,8 +46,8 @@ public:
 		
 		mTransform.velocity.x = mTransform.speed * moveX;
 		gCurrentWorld->mCameraPosition = Vector2(
-			mTransform.position.x - (gInstance->mWidth / 2) - 25,
-			mTransform.position.y - (gInstance->mHeight / 2) - 50
+			mTransform.position.x - (960 / 2) - 25,
+			mTransform.position.y - (540 / 2) - 50
 		);
 	}
 
@@ -91,7 +91,17 @@ public:
 			n->mTransform.height = 100;
 			gCurrentWorld->AddObject(n);
 		}
-
+		static byte delay = 0;
+		delay++;
+		if (delay >= 10) {
+			MaxObject* o = new MaxObject();
+			o->mTransform.position.x = SDL_rand(10000);
+			o->mTransform.position.y = 0;
+			delay = 0;
+			SDL_Log("New object!");
+			gCurrentWorld->AddObject(o);
+		}
+		
 		gEzRender->cRenderText(20, 20, "Object count: %d", gCurrentWorld->mObjectCount);
 
 		//gCurrentWorld->mCameraPosition.x += (gInput->GetInputHeld(INPUT_CODE_RIGHT) - gInput->GetInputHeld(INPUT_CODE_LEFT)) * 5.0f;

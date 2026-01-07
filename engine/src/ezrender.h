@@ -24,13 +24,17 @@ public:
 	Color mRenderColor;
 #endif
 
-	void RenderStart() {
+	void RenderClear() {
 #if COMOPT_R_USE_HA
-		SDL_SetRenderDrawColor(mRenderer, 0, 255, 0, 255);
+		cSetDrawColor(0, 255, 0, 255);
 		SDL_RenderClear(mRenderer);
 #else
-
+		SDL_ClearSurface(SDL_GetWindowSurface(gInstance->mWindow), 0, 255, 0, 255);
 #endif
+	}
+
+	void RenderStart() {
+		RenderClear();
 	}
 
 	void RenderEnd() {
@@ -79,16 +83,12 @@ public:
 		if (isFilled) {
 			SDL_Surface* s = SDL_CreateSurface(r.w, r.h, SDL_PIXELFORMAT_RGBA8888);
 			SDL_Rect rR = r;
-			Uint8 c[4] = {
-				mRenderColor.r,
-				mRenderColor.g,
-				mRenderColor.b,
-				mRenderColor.a,
-			};
+			Uint32 color = SDL_MapRGB(SDL_GetPixelFormatDetails(SDL_PIXELFORMAT_RGBA8888), NULL, mRenderColor.r, mRenderColor.g, mRenderColor.b);
 
-			SDL_FillSurfaceRect(s, &rR, (Uint32)c);
 
-			SDL_BlitSurface(s, NULL, SDL_GetWindowSurface(gInstance->mWindow), &rR);
+			SDL_FillSurfaceRect(SDL_GetWindowSurface(gInstance->mWindow), &rR, color);
+
+			//SDL_BlitSurface(s, NULL, SDL_GetWindowSurface(gInstance->mWindow), &rR);
 		}
 #endif
 	}
@@ -102,7 +102,8 @@ public:
 	void cRenderTexture(SDL_Surface* in, Rect crop, Rect position, float rotation = 0.0f, SDL_FlipMode flipMode = SDL_FLIP_NONE) {
 		SDL_FlipSurface(in, flipMode);
 		//SDL_RotateSurface(); We need to wait for SDL 3.4.0, we are on 3.2.2
-
+		SDL_RotateSurface(in, rotation);
+		SDL_FlipSurface(in, flipMode);
 		SDL_Rect cropR = crop;
 		SDL_Rect positionR = position;
 		SDL_BlitSurface(in, &cropR, SDL_GetWindowSurface(gInstance->mWindow), &positionR);
@@ -110,7 +111,12 @@ public:
 #endif
 
 	void cRenderText(float x, float y, string_static format, ...) {
+#if COMOPT_R_USE_HA
+		cSetDrawColor(0, 0, 0, 255);
 		SDL_RenderDebugTextFormat(mRenderer, x, y, format);
+#else
+
+#endif
 	}
 
 	void cRenderObject(Vector2 pCameraPos, MaxObject *pObject) {
@@ -120,35 +126,45 @@ public:
 			static_cast<int>(pObject->mTransform.width),
 			static_cast<int>(pObject->mTransform.height),
 		};
+#if COMOPT_R_USE_HA
 		SDL_FRect compilerFix = transAsRect;
-
+#endif
 
 
 		if (pObject->mUseSprite) {
-			SDL_FRect compilerFix = transAsRect;
 			Sprite& s = pObject->mSprite;
 			Cell& sC = s.mCells[s.mCellIndex];
 
 
 			ushort textureOffset = 0;
+			Rect texPos = {
+				static_cast<int>(sC.width * s.mFrame_index),
+				static_cast<int>(textureOffset),
+				static_cast<int>(sC.width),
+				static_cast<int>(sC.height),
+			};
+
+#if COMOPT_R_USE_HA
 			if (s.mCellIndex > 0) {
 				for (short i = s.mCellIndex - 1; i >= 0; i--) {
 					textureOffset += s.mCells[i].height;
 				}
 			}
 
-			SDL_FRect texPos = {
-				static_cast<float>(sC.width * s.mFrame_index),
-				static_cast<float>(textureOffset),
-				static_cast<float>(sC.width),
-				static_cast<float>(sC.height),
-			};
-			SDL_RenderTextureRotated(mRenderer, pObject->mSprite.mTexturePage, &texPos, &compilerFix, pObject->mTransform.rotation, NULL, (pObject->mTransform.direction == 1 ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL) );
+
+			cRenderTexture(s.mTexturePage, texPos, transAsRect, pObject->mTransform.rotation, (pObject->mTransform.direction == 1 ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL));
+			//cRenderTexture(mRenderer, pObject->mSprite.mTexturePage, &texPos, &compilerFix, pObject->mTransform.rotation, NULL, (pObject->mTransform.direction == 1 ? SDL_FLIP_NONE : SDL_FLIP_HORIZONTAL) );
+#else
+
+			cRenderTexture(s.mTexturePage, texPos, transAsRect);
+#endif
 		}
+
 		else {
 			cSetDrawColor(255, 0, 0, 255);
 			cRenderRect(transAsRect, true);
 		}
+
 	}
 
 	void cRenderTileset() {

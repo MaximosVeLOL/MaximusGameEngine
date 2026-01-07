@@ -2,6 +2,7 @@
 
 class MaxObject;
 #include "common.h"
+#include <vector> //For uGetObjectsInView
 
 typedef uint olimit;
 constexpr olimit OBJECT_LIMIT = 10000;
@@ -26,7 +27,10 @@ public:
 class World {
 	MaxObject* mObjects[OBJECT_LIMIT] = { nullptr };
 
-	byte mGravity = 1;
+	float mGravity = 0.25;
+
+	ushort mTickRate = 0;
+	ushort mTicks = 0;
 
 public:
 	olimit mObjectCount = 0;
@@ -40,17 +44,10 @@ public:
 		255
 	};
 
-	void AddObject(MaxObject* object) {
-		if (mObjectCount >= OBJECT_LIMIT) {
-			ERROR("We are above the object limit!");
-		}
-		mObjects[mObjectCount] = object;
-		mObjectCount++;
-
-	}
+	void AddObject(MaxObject* object);
 
 	MaxObject* uGetObjectInPoint(Vector2 pPoint);
-
+	std::vector<MaxObject *> uGetObjectsInView();
 
 	void UpdateAllObjects();
 

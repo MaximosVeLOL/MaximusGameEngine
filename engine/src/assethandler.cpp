@@ -11,7 +11,11 @@ void InitializeDefaultTextures() {
 	mDefault.mAudio = MIX_LoadAudio_IO(gAudio->mMixer, f.mCurrent, true, false);
 	f.Close();
 	mDefault.mSprite = new Sprite();
+#if COMOPT_R_USE_HA
 	mDefault.mSprite->mTexturePage = SDL_CreateTextureFromSurface(gEzRender->mRenderer, mDefault.mTexture);
+#else
+	mDefault.mSprite->mTexturePage = mDefault.mTexture;
+#endif
 	mDefault.mSprite->mCells = new Cell[1];
 	Cell* c = &mDefault.mSprite->mCells[0];
 	c->width = 64;
@@ -56,8 +60,8 @@ class TestAssetGroup : public AssetGroup {
 public:
 	TestAssetGroup() {
 		//SDL_Log("Initializing mAssets!");
-		mAssets[0] = Asset("plr.MESF");
-		mAssets[1] = Asset("bg.wav");
+		mAssets[0] = Asset(ASSET_TYPE_SPRITE, "plr.MESF");
+		mAssets[1] = Asset(ASSET_TYPE_AUDIO, "bg.wav");
 		//mAssets[1] = Asset("test.MESF");
 		mAssetCount = 2;
 	}

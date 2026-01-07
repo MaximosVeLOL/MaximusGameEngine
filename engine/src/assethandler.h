@@ -41,14 +41,42 @@ struct DefaultAssets {
 
 extern DefaultAssets mDefault;
 
+//I am so tired of having to base things off of its file extension, and what if there are other file extensions? (Check for it also, bruh...)
+//So I am using this, because there are many use cases where we need the asset type.
+enum AssetType : byte { 
+	ASSET_TYPE_AUDIO = 0,
+	ASSET_TYPE_IMAGE = 1,
+	ASSET_TYPE_SPRITE = 2,
+	ASSET_TYPE_FILE = 3,
+	ASSET_TYPE_TILESET = 4,
+};
 
 
-
-#define LOAD_DEFAULT mData = mDefault.mSprite; return false
 struct Asset {
 	//char mFileName[32] = {'!'};
 	string_static mFileName = nullptr;
 	void* mData = nullptr;
+	AssetType mType = ASSET_TYPE_FILE;
+	bool mFailedLoad = false;
+
+	void LoadDefault() {
+		switch (mType) {
+		case ASSET_TYPE_AUDIO:
+			mData = mDefault.mAudio;
+			break;
+		case ASSET_TYPE_IMAGE:
+			mData = mDefault.mTexture;
+			break;
+		case ASSET_TYPE_SPRITE:
+			mData = mDefault.mSprite;
+			break;
+		case ASSET_TYPE_FILE:
+			mData = nullptr;
+			break;
+		case ASSET_TYPE_TILESET:
+			break;
+		}
+	}
 
 	bool TryLoad() {
 		if (!mFileName) {
@@ -59,41 +87,48 @@ struct Asset {
 			SDL_Log("Our data is already loaded!");
 			return true;
 		}
+
+
 		//SDL_Log("mFileName: %s", mFileName);
 		SDL_Log("Trying to load file! (filename: %s/%s)", uGetGraphicsDirectory(), mFileName);
-		char s[128];
+		char s[filename_length];
 		SDL_snprintf(s, 128, "%s/%s", uGetGraphicsDirectory(), mFileName);
 		File file; //Don't use initializer, it breaks everything.
 		file.OpenFile(s, o_read);
-
-
-		if (uFileExtensionEquals(mFileName, ".wav")) {
-			SDL_Log("Loading as audio!");
+		if (!file.uIsOpen()) {
+			SDL_Log("Failed to load!");
+			LoadDefault();
+			return false;
+		}
+		switch (mType) {
+		case ASSET_TYPE_AUDIO:
 			mData = new MIX_Audio*;
-			mData = (void *)MIX_LoadAudio_IO(gAudio->mMixer, file.mCurrent, true, false);
-			if (!mData) { mData = mDefault.mAudio; return false; }
-		}
-		else if (uFileExtensionEquals(mFileName, ".png")) {
-			SDL_Log("Loading as png!");
+			mData = (void*)MIX_LoadAudio_IO(gAudio->mMixer, file.mCurrent, true, false);
+			if (!mData) { LoadDefault(); return false; }
+			break;
+		case ASSET_TYPE_IMAGE:
 			mData = SDL_LoadPNG_IO(file.mCurrent, false);
-			if (!mData) { mData = mDefault.mTexture; return false; }
-		}
-		else if (uFileExtensionEquals(mFileName, ".MESF")) {
-			SDL_Log("Loading as sprite!");
+			if (!mData) { LoadDefault(); return false; }
+			
+			break;
+		case ASSET_TYPE_SPRITE: {
+
 			mData = new Sprite();
 			Sprite& asSprite = *(Sprite*)mData;
 
-
+			//Load sprite file
 			string_static header = file.ReadString(4);
 			SDL_Log("Header: %s", header);
 			if (SDL_strcmp(header, "MESF") != 0 && false) {
 				SDL_Log("Invalid header!");
-				LOAD_DEFAULT;
+				LoadDefault();
+				return false;
 			}
 			float cellAmount = (file.mInfo.size - 4) / 6; //Subtract the header and divide by the size of a cell in order to get the amount of cells
 			if (cellAmount != SDL_floorf(cellAmount) && false) {
 				SDL_Log("Invalid cell amount!");
-				LOAD_DEFAULT;
+				LoadDefault();
+				return false;
 			}
 			SDL_Log("Cell amount: %f", cellAmount);
 
@@ -105,36 +140,47 @@ struct Asset {
 				cur->frame_delay = file.ReadByte();
 				cur->frame_amount = file.ReadByte();
 				SDL_Log("Cell data (ind: %d):\nwidth: %d\nheight: %d\nframe delay: %d\nframe amount: %d", i, cur->width, cur->height, cur->frame_delay, cur->frame_amount);
-				
+
 			}
-			string_static fileName = file.uGetFileName();
+			string_static fileName = file.uGetFileName(); //Get the file name (sprite.MESF -> sprite)
 			file.Close();
-			file.OpenFileFormatted(o_read, "%s/%s.png", uGetGraphicsDirectory(), fileName);
+			//Load image
+
+			file.OpenFileFormatted(o_read, "%s/%s.png", uGetGraphicsDirectory(), fileName); //(sprite.MESF -> sprite -> sprite.png)
 			if (!file.uIsOpen()) {
-				LOAD_DEFAULT;
+				LoadDefault();
+				return false;
 			}
 			SDL_Surface* image = SDL_LoadPNG_IO(file, false);
 			if (!image) {
-				LOAD_DEFAULT;
+				LoadDefault();
+				return false;
 			}
+#if COMOPT_R_USE_HA
 			asSprite.mTexturePage = SDL_CreateTextureFromSurface(gEzRender->mRenderer, image);
+#else
+			asSprite.mTexturePage = image;
+#endif
 			if (!asSprite.mTexturePage) {
-				LOAD_DEFAULT;
+				LoadDefault();
+				return false;
 			}
 			SDL_DestroySurface(image);
-
 		}
-		else {
-			SDL_Log("Loading as a regular file!");
+			break;
+		case ASSET_TYPE_FILE:
 			mData = file.ReadAll();
-			return true;
+			break;
+		case ASSET_TYPE_TILESET:
+			break;
 		}
 		SDL_Log("Loaded successfully!");
 		return true;
 	}
 
 	Asset() {}
-	Asset(string_static pFileName) {
+	Asset(AssetType pType, string_static pFileName) {
+		mType = pType;
 		mFileName = pFileName;
 		/*for (byte i = 0; i < sizeof(pFileName) + 1; i++) {
 			mFileName[i] = pFileName[i];
@@ -197,6 +243,12 @@ public:
 
 
 		//return mLoadedAssets >= mAssetCount;
+	}
+
+	void EnsureGroupIsLoaded(AssetGroupID pWhichGroup) {
+		if (mCurrentGroup != pWhichGroup) {
+
+		}
 	}
 
 	AssetGroup* GetCurrentGroup() {

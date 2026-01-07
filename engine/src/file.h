@@ -115,14 +115,15 @@ struct File {
 		}
 	}
 
-	string_static ReadString(ushort size) {
+	string_static ReadString(ushort length) {
 		if (!mCurrent) {
 			SDL_Log("Failed to read string! (file isn't open)");
 			return "INVALID";
 		}
-		char *returnValue = new char[size];
-		byte readBytes = SDL_ReadIO(mCurrent, returnValue, size);
-		if (readBytes != size) {
+		char *returnValue = new char[length + 1];
+		memset(returnValue, '!', length + 1);
+		byte readBytes = SDL_ReadIO(mCurrent, returnValue, length);
+		if (readBytes != length) {
 			SDL_Log("Failed to read string (read bytes not equal to needed)");
 			return "INVALID";
 		}

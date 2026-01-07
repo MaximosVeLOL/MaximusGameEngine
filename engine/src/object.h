@@ -36,6 +36,9 @@ private:
 
 
 public:
+	
+	uint mObjectID = 0;
+	uint mWorldID = 0xFFFFFFFF;
 
 	bool mIsActive = true;
 
@@ -62,5 +65,6 @@ public:
 
 };
 
+extern MaxObject mAllObjects[];
 
 #endif

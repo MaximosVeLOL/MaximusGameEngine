@@ -13,8 +13,11 @@ struct Cell {
 };
 
 struct Sprite {
+#if COMOPT_R_USE_HA
 	SDL_Texture* mTexturePage = nullptr;
-
+#else
+	SDL_Surface* mTexturePage = nullptr;
+#endif
 	Cell* mCells = nullptr;
 	byte mCellIndex = 0;
 
