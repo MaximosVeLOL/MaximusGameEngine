@@ -53,6 +53,8 @@ public:
 
 	void RenderAllObjects();
 
+	MaxObject* Raycast(Vector2 startingPos, Vector2 direction, ushort maxDistance = 100);
+
 	World();
 
 };

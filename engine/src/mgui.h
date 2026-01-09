@@ -41,6 +41,7 @@ public:
 	bool mIsActive = true; //If we are not active, then we show that.
 	bool mVisible = true;
 	bool mMouseOver = false;
+	bool mHighlightable = true;
 
 	void uToggleActive() {
 		mIsActive = !mIsActive;
@@ -52,6 +53,10 @@ public:
 
 	void uRenderRect() {
 		gEzRender->cRenderRect(mRect, true, &mRenderColor);
+	}
+
+	void uRenderRect(Rect r, Color c) {
+		gEzRender->cRenderRect(r, true, &c);
 	}
 
 	void uRenderText(string_static format, ...) {
@@ -143,6 +148,12 @@ public:
 		uRenderRect();
 		uRenderText(pText);
 	}
+
+	eButton() : Element() {}
+	eButton(string_static pInText, int x, int y, int w, int h) : Element(x, y, w, h) {
+		pText = new char[sizeof(pInText)];
+		SDL_strlcpy(pText, pInText, sizeof(pInText));
+	}
 };
 
 class eText : public Element {
@@ -151,6 +162,11 @@ public:
 
 	void Render() override {
 		uRenderText(pText);
+	}
+
+	eText(int x, int y) {
+		mRect.x = x;
+		mRect.y = y;
 	}
 };
 
@@ -188,9 +204,64 @@ public:
 	}
 
 
-	eBar() {
-		mIsActive = false;
+	eBar() : Element() {
+		mHighlightable = false;
 	}
+
+	eBar(int x, int y, int w, int h) : Element(x, y, w, h) {
+		mHighlightable = false;
+	}
+};
+
+
+class eList : public Element {
+public:
+	ushort pCurrentIndex = 0;
+	ushort pHeightPerEach = 0;
+	string_static* pElements = nullptr;
+
+	void UpdateElements(string_static* pNewElements) {
+		if (pElements != nullptr) {
+			delete[] pElements;
+		}
+		pElements = pNewElements;
+		
+		pHeightPerEach = SDL_lroundf(mRect.h / sizeof(pNewElements));
+	}
+
+	void OnClicked() override {
+		pCurrentIndex = SDL_lroundf((GetMousePos().y - mRect.y) / pHeightPerEach); //Get offset from start
+
+	}
+
+	void Render() override {
+		Color renderColor;
+		for (ushort i = 0; i < sizeof(pElements); i++) {
+			if (i == pCurrentIndex) {
+				renderColor = STYLE.backgroundHighlighted;
+			}
+			else renderColor = STYLE.background;
+			uRenderRect(Rect(mRect.x, mRect.y + (i * pHeightPerEach), mRect.w, pHeightPerEach), renderColor);
+		}
+	}
+
+	eList() : Element() {
+		mHighlightable = false;
+	}
+
+	eList(int x, int y, int w, int h) : Element(x, y, w, h) {
+		mHighlightable = false;
+	}
+
+};
+
+class eWindow : public Element {
+public:
+	void Render() override {
+		uRenderRect();
+	}
+
+	using Element::Element;
 };
 #pragma endregion
 

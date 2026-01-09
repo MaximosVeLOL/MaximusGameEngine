@@ -1,12 +1,12 @@
 #pragma once
 
-
+#include "common.h"
 #include "file.h"
-
-struct Property {
-	string_static mName = "";
-	void* value = nullptr;
-};
+#include "instance.h"
+#include "world.h"
+#include "object.h"
+#include "input.h"
+#include "ezrender.h"
 
 struct ExportableMaxObject {
 	Vector2 mStartPos;
@@ -16,6 +16,7 @@ struct ExportableMaxObject {
 	Property* mProperties = nullptr;
 	SDL_Texture* mRenderImage = nullptr;
 };
+
 void uImportWorldSpace(const char* pFileName) {
 	File f(o_read, pFileName);
 	/* World space:
@@ -38,6 +39,15 @@ enum Editor_Mode : byte  {
 	EDITOR_MODE_EDIT, //When editing an object
 };
 
+
+enum ObjectID : byte {
+	OBJECT_ID_NONE = 0,
+	OBJECT_ID_PLAYER,
+	OBJECT_ID_COLLIDABLE,
+	OBJECT_ID_PLATFORM,
+	OBJECT_ID_LAST
+};
+
 class Editor_cMain : public Canvas {
 private:
 	void Export() {
@@ -53,7 +63,7 @@ public:
 	ExportableMaxObject* uGetObjectHovering() {
 		Vector2 m = gInput->GetMousePos();
 		for (ExportableMaxObject& o : pObjects) {
-			if (m.x >= o.mStartX && m.x <= o.mStartX + o.mWidth && m.y >= o.mStartY && m.y <= o.mStartY + o.mHeight) {
+			if (m.x >= o.mStartPos.x && m.x <= o.mStartPos.x + o.mWidth && m.y >= o.mStartPos.y && m.y <= o.mStartPos.y + o.mHeight) {
 				return &o;
 			}
 		}
@@ -67,10 +77,6 @@ public:
 				break;
 
 			case EDITOR_MODE_PLACE:
-				ExportableMaxObject o;
-				
-				pObjects.push_back()
-				break;
 
 			case EDITOR_MODE_EDIT:
 
@@ -78,7 +84,16 @@ public:
 			}
 		}
 	}
+
+
+	Editor_cMain() {
+		AddElement(new eWindow(50, 270, 200, 200));
+		AddElement(new eButton("Object Type", 100, 280, 50, 25));
+	}
+};
+
+void SetupEditor() {
+	gCurrentCanvas = new Editor_cMain();
+	gCurrentWorld = new World();
+
 }
-
-
-//Property mProperties[]

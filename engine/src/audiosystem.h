@@ -22,6 +22,7 @@ private:
 	MIX_Track* mTracks[8] = {nullptr};
 public:
 	MIX_Mixer* mMixer = nullptr;
+
 	AudioSystem();
 
 	void PlaySound(Sound pSound, char pWhichChannel = -1) {

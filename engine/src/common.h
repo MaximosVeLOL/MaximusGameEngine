@@ -34,7 +34,7 @@ typedef unsigned long long ulong; //A regular long is an int.
 typedef const char* string_static;
 typedef char* string_editable;
 typedef std::string string_easy;
-#define STATIC_AS_EDITABLE(message) (char *)message
+#define STATIC_AS_EDITABLE(message) (string_editable)message
 
 //Non SDL-specific things
 
@@ -45,8 +45,9 @@ struct Color {
 	byte b = 0;
 	byte a = 0;
 	
-	//Color() {}
-	//Color(byte pR = 0, byte pG = 0, byte pB = 0, byte pA = 255) : r(pR), g(pG), b(pB), a(pA) {}
+	Color() {}
+	//I'm so dumb, I gave all parameters default values and it thought it was making errors... 
+	Color(byte pR, byte pG = 0, byte pB = 0, byte pA = 255) : r(pR), g(pG), b(pB), a(pA) {}
 };
 
 
@@ -105,6 +106,11 @@ struct TVector2 {
 typedef TVector2<float> Vector2;
 typedef TVector2<int> Vector2Int;
 typedef TVector2<short> Vector2Short;
+
+struct Property {
+	string_static mName = "";
+	void* value = nullptr;
+};
 
 
 #endif

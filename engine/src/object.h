@@ -55,6 +55,10 @@ public:
 
 	}
 
+	virtual void OnRender() {
+
+	}
+
 	void Update() {
 		if (!mIsActive) return;
 		if (mUseSprite) mSprite.Update();

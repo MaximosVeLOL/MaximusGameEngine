@@ -76,15 +76,22 @@ void World::UpdateAllObjects() {
 
 
 	std::vector<MaxObject *> viewObjects = uGetObjectsInView();
-
+	Vector2 top;
 	for (olimit i = 0; i < mObjectCount; i++) {
 		MaxObject& cur = *mObjects[i];
 		cur.Update();
 		if (cur.mUsePhysics) cur.mTransform.velocity.y += cur.mTransform.mass * mGravity;
 		if (!cur.mIsSolid || cur.mTransform.velocity.x == 0 && cur.mTransform.velocity.y == 0) continue;
 
-		Vector2 top;
+		
+		//Only collide with other objects in view
+#if true //Use view objects
 		for (MaxObject* other : viewObjects) {
+#else
+		for (ushort i = 0; i < mObjectCount; i++) {
+			
+			MaxObject* other = mObjects[i];
+#endif
 			SDL_Log("Using %d!", other->mObjectID);
 			if (other->mObjectID == cur.mObjectID || !other->mIsSolid || !other->mIsActive) continue;
 
@@ -129,5 +136,29 @@ void World::RenderAllObjects() {
 	for (olimit i = 0; i < mObjectCount; i++) {
 		//gEzRender->cRenderRect(mObjects[i]->mTransform, true);
 		gEzRender->cRenderObject(mCameraPosition, mObjects[i] );
+		mObjects[i]->OnRender();
 	}
+}
+
+MaxObject* World::Raycast(Vector2 startingPos, Vector2 velocity, ushort maxDistance) {
+	Vector2 current = startingPos;
+	ushort distance = 0;
+	bool success = false;
+	while (!success) {
+		for (ushort i = 0; i < mObjectCount; i++) {
+			MaxObject& cur = *mObjects[i];
+			if (IsColliding(true, current, 0, 0, cur.mTransform.position, cur.mTransform.width, cur.mTransform.height) || IsColliding(false, current, 0, 0, cur.mTransform.position, cur.mTransform.width, cur.mTransform.height)) {
+				return &cur;
+			}
+		}
+		current.x += velocity.x;
+		current.y += velocity.y;
+		distance++;
+
+		if (distance >= maxDistance) break;
+
+	}
+
+
+	return nullptr;
 }

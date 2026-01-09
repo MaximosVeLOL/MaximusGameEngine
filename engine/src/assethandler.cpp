@@ -25,6 +25,9 @@ void InitializeDefaultTextures() {
 }
 
 string_static uGetGraphicsDirectory() {	
+	return "M:/source/MaximusGameEngine/gfx"; //Temporary for debugging rn
+
+	/*
 	static string_editable returnValue = nullptr;
 	if (!returnValue) {
 		string_editable curDir = SDL_GetCurrentDirectory();
@@ -41,6 +44,7 @@ string_static uGetGraphicsDirectory() {
 
 
 	return returnValue;
+	*/
 }
 
 bool uFileExtensionEquals(string_static pFileName, string_static pTargetExtension) {

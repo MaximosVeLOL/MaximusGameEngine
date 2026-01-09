@@ -12,7 +12,7 @@ void Instance::DoRendering() {
 	gEzRender->RenderStart();
 	if(gCurrentWorld) gCurrentWorld->RenderAllObjects();
 	if(gCurrentCanvas) gCurrentCanvas->RenderElements();
-	gEzRender->RenderEnd();
+	
 
 }
 

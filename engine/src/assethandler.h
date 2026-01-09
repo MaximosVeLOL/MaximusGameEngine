@@ -49,6 +49,7 @@ enum AssetType : byte {
 	ASSET_TYPE_SPRITE = 2,
 	ASSET_TYPE_FILE = 3,
 	ASSET_TYPE_TILESET = 4,
+	ASSET_TYPE_FONT = 5,
 };
 
 
@@ -75,6 +76,8 @@ struct Asset {
 			break;
 		case ASSET_TYPE_TILESET:
 			break;
+
+
 		}
 	}
 
@@ -172,6 +175,26 @@ struct Asset {
 			mData = file.ReadAll();
 			break;
 		case ASSET_TYPE_TILESET:
+			break;
+
+		case ASSET_TYPE_FONT:
+			mData = new Font();
+			Font* asFont = (Font*)mData;
+			asFont->usageWidth = file.ReadByte();
+			asFont->usageHeight = file.ReadByte();
+			string_static fileName = file.uGetFileName();
+			file.Close();
+			file.OpenFileFormatted(o_read, "%s.png", fileName);
+			SDL_Surface* s = SDL_LoadPNG_IO(file, false);
+			if (!s) {
+				LoadDefault();
+				return false;
+			}
+			asFont->image = SDL_CreateTextureFromSurface(gEzRender->mRenderer, s);
+			if (!asFont->image) {
+				LoadDefault();
+				return false;
+			}
 			break;
 		}
 		SDL_Log("Loaded successfully!");

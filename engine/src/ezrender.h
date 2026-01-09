@@ -14,6 +14,19 @@
 
 */
 
+struct Font {
+#if COMOPT_R_USE_HA
+	SDL_Texture* image = nullptr;
+#else
+	SDL_Surface* image = nullptr;
+#endif
+	byte usageWidth = 0;
+	byte usageHeight = 0;
+	//bool sHasNumbers = false;
+	//bool sHasLowercase = false;
+
+};
+
 class EzRender {
 private:
 
@@ -70,7 +83,10 @@ public:
 	}
 
 	void cRenderRect(Rect r, bool isFilled = false, Color* c = nullptr) {
-		if (c) cSetDrawColor(*c);
+		if (c) {
+			cSetDrawColor(*c);
+			delete c;
+		}
 
 #if COMOPT_R_USE_HA
 		SDL_FRect compilerFix = r;
@@ -169,6 +185,71 @@ public:
 
 	void cRenderTileset() {
 
+	}
+
+	void cRenderText(Font font, int x, int y, string_static text, byte size = 1) {
+		char curIndex = 0;
+		byte yClipPos = 0;
+
+		int renderX = x;
+		for (ushort i = 0; i < SDL_strlen(text); i++) {
+			
+
+			switch (text[i]) {
+				case ' ':
+					renderX += font.usageWidth * size;
+					continue;
+				break;
+				
+				case '\n':
+					renderX = 0;
+					y += font.usageHeight * size;
+					continue;
+				break;
+
+				case '?':
+					curIndex = 10;
+					yClipPos = font.usageHeight * 2;
+
+					break;
+				case '!':
+					curIndex = 11;
+					yClipPos = font.usageHeight * 2;
+				break;
+
+				case '.':
+					curIndex = 12;
+					yClipPos = font.usageHeight * 2;
+				break;
+
+				case ',':
+					curIndex = 13;
+					yClipPos = font.usageHeight * 2;
+				break;
+
+				default:
+					if (text[i] >= 'A' && text[i] <= 'Z') { //Check if we are in the alphabet
+						yClipPos = 0;
+						curIndex = text[i] - 'A'; //a - a = 0, b - a = 1
+					}
+					else if (text[i] >= 'a' && text[i] <= 'z') {
+						yClipPos = font.usageHeight;
+						curIndex = text[i] - 'a'; //a - a = 0, b - a = 1
+						//SDL_Log("Char: %c\nIndex: %d", text[i], curIndex);
+					}
+					else if (text[i] >= '0' && text[i] <= '9') {
+						yClipPos = font.usageHeight * 2;
+						curIndex = text[i] - '0';
+					}
+				break;
+			}
+			
+			Rect renderPos = Rect(x + renderX, y, font.usageWidth * size, font.usageHeight * size);
+			//cSetDrawColor(255, 255, 0, 255);
+			//cRenderRect(renderPos, true);
+			cRenderTexture(font.image, Rect(curIndex * font.usageWidth, yClipPos, font.usageWidth, font.usageHeight ), renderPos);
+			renderX += font.usageWidth * size;
+		}
 	}
 	
 
