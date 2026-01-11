@@ -4,8 +4,6 @@
 #include "common.h"
 #include "instance.h"
 
-
-
 void MessageBox(Vector2 pPosition, string_static pMessage) {
 	
 }
@@ -36,6 +34,8 @@ void Error(byte pStatus, string_static pMessage) {
 			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "A (Fine) error has occured!", pMessage, NULL);
 			break;
 		default:
+
+		break;
 	}
 }
 
@@ -46,6 +46,8 @@ string_static uPrompt(string_static message) {
 	SDL_Window* popup = SDL_CreatePopupWindow(gInstance->mWindow, 0, 0, 400, 400, SDL_WINDOW_POPUP_MENU);
 	
 #endif
+
+	return nullptr;
 }
 
 

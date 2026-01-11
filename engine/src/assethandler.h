@@ -20,17 +20,21 @@
 #include "audiosystem.h"
 #include "ezrender.h"
 #include "sprite.h"
+#include <vector>
 
+extern string_static uGetRootDirectory();
 extern string_static uGetGraphicsDirectory();
 
-
+/*
 enum AssetGroupID : byte {
 	ASSET_GROUP_NONE = 0,
 	ASSET_GROUP_TEST,
 	ASSET_GROUP_LAST,
 };
+*/
 
 extern bool uFileExtensionEquals(string_static pFileName, string_static pTargetExtension);
+extern void LoadResources();
 
 struct DefaultAssets {
 	SDL_Surface* mTexture = nullptr;
@@ -43,22 +47,21 @@ extern DefaultAssets mDefault;
 
 //I am so tired of having to base things off of its file extension, and what if there are other file extensions? (Check for it also, bruh...)
 //So I am using this, because there are many use cases where we need the asset type.
-enum AssetType : byte { 
+enum AssetType : byte {
 	ASSET_TYPE_AUDIO = 0,
 	ASSET_TYPE_IMAGE = 1,
 	ASSET_TYPE_SPRITE = 2,
 	ASSET_TYPE_FILE = 3,
 	ASSET_TYPE_TILESET = 4,
-	ASSET_TYPE_FONT = 5,
 };
 
 
 struct Asset {
-	//char mFileName[32] = {'!'};
-	string_static mFileName = nullptr;
+	char mFileName[32] = {'\0'};
+	//string_static mFileName = nullptr;
 	void* mData = nullptr;
 	AssetType mType = ASSET_TYPE_FILE;
-	bool mFailedLoad = false;
+	//bool mFailedLoad = false;
 
 	void LoadDefault() {
 		switch (mType) {
@@ -76,8 +79,6 @@ struct Asset {
 			break;
 		case ASSET_TYPE_TILESET:
 			break;
-
-
 		}
 	}
 
@@ -112,7 +113,7 @@ struct Asset {
 		case ASSET_TYPE_IMAGE:
 			mData = SDL_LoadPNG_IO(file.mCurrent, false);
 			if (!mData) { LoadDefault(); return false; }
-			
+
 			break;
 		case ASSET_TYPE_SPRITE: {
 
@@ -176,73 +177,70 @@ struct Asset {
 			break;
 		case ASSET_TYPE_TILESET:
 			break;
-
-		case ASSET_TYPE_FONT:
-			mData = new Font();
-			Font* asFont = (Font*)mData;
-			asFont->usageWidth = file.ReadByte();
-			asFont->usageHeight = file.ReadByte();
-			string_static fileName = file.uGetFileName();
-			file.Close();
-			file.OpenFileFormatted(o_read, "%s.png", fileName);
-			SDL_Surface* s = SDL_LoadPNG_IO(file, false);
-			if (!s) {
-				LoadDefault();
-				return false;
-			}
-			asFont->image = SDL_CreateTextureFromSurface(gEzRender->mRenderer, s);
-			if (!asFont->image) {
-				LoadDefault();
-				return false;
-			}
-			break;
 		}
 		SDL_Log("Loaded successfully!");
 		return true;
 	}
 
 	Asset() {}
-	Asset(AssetType pType, string_static pFileName) {
-		mType = pType;
-		mFileName = pFileName;
-		/*for (byte i = 0; i < sizeof(pFileName) + 1; i++) {
-			mFileName[i] = pFileName[i];
-		}*/
-	}
 };
 
 class AssetGroup {
 public:
+	char mName[32] = {'\0'};
 	ushort mLoadedAssets = 0;
-	Asset mAssets[10];
-	byte mAssetCount = 10;
+	std::vector<Asset> mAssets;
 
 };
 
 
-extern AssetGroup mGroups[ASSET_GROUP_LAST];
+extern std::vector<AssetGroup> mGroups;
+
+extern short uGetGroupIndexByName(string_static name);
 
 class AssetHandler {
 private:
-	AssetGroupID mCurrentGroup = ASSET_GROUP_NONE;
+	//AssetGroupID mCurrentGroup = ASSET_GROUP_NONE;
+	short mCurrentGroup = -1;
 	ushort mTotalAssetsLoaded = 0;
 	uint mMemoryUsage = 0;
 public:
 
-	void UnloadGroup(AssetGroupID pWhichGroup = ASSET_GROUP_NONE) {
-		if (pWhichGroup == ASSET_GROUP_NONE) {
-			pWhichGroup = mCurrentGroup;
+
+
+	void UnloadGroup(short pGroupIndex = -1) {
+		if (pGroupIndex == -1) {
+			pGroupIndex = mCurrentGroup;
 		}
 
-		AssetGroup* g = &mGroups[pWhichGroup];
-		for (ushort i = 0; i < g->mLoadedAssets; i++) {
-			SDL_free(g->mAssets[i].mData);
+		AssetGroup g = mGroups[pGroupIndex];
+		for (ushort i = 0; i < g.mLoadedAssets; i++) {
+			SDL_free(g.mAssets[i].mData);
 		}
-		g->mLoadedAssets = 0;
+		g.mLoadedAssets = 0;
 	}
 
-	void LoadGroup(AssetGroupID pWhichGroup, bool pUnloadOtherGroups = false) {
-		if (mCurrentGroup != ASSET_GROUP_NONE && pUnloadOtherGroups) {
+	void UnloadGroup(string_static pGroupName = "invalid") {
+		short pGroupIndex = uGetGroupIndexByName(pGroupName);
+		if (pGroupIndex == -1) {
+			pGroupIndex = mCurrentGroup;
+		}
+
+		AssetGroup g = mGroups[pGroupIndex];
+		for (ushort i = 0; i < g.mLoadedAssets; i++) {
+			SDL_free(g.mAssets[i].mData);
+		}
+		g.mLoadedAssets = 0;
+	}
+
+	void UnloadAllGroups() {
+		for (ushort g = 0; g < sizeof(mGroups); g++) {
+			UnloadGroup(g);
+		}
+	}
+
+	void LoadGroupByIndex(ushort pWhichGroup, bool pUnloadOtherGroups = false) {
+		if (mCurrentGroup >= 0 && pUnloadOtherGroups) {
 			UnloadGroup(mCurrentGroup);
 		}
 
@@ -251,11 +249,11 @@ public:
 
 		//SDL_Log("Trying to load assets...");
 		AssetGroup *g = &mGroups[pWhichGroup];
-		for (ushort i = 0; i < g->mAssetCount; i++) {
-			SDL_Log("Loading asset %d / %d", i + 1, g->mAssetCount);
+		for (ushort i = 0; i < g->mAssets.size(); i++) {
+			//SDL_Log("Loading asset %d / %d", i + 1, g.mAssets.size());
 			if (g->mAssets[i].TryLoad()) {
 				g->mLoadedAssets++;
-				SDL_Log("sizeof mAssets[%d]: %d", i, sizeof(g->mAssets[i].mData));
+				//SDL_Log("sizeof mAssets[%d]: %d", i, sizeof(g.mAssets[i].mData) );
 				mMemoryUsage += sizeof(g->mAssets[i].mData);
 			}
 			else {
@@ -268,9 +266,41 @@ public:
 		//return mLoadedAssets >= mAssetCount;
 	}
 
-	void EnsureGroupIsLoaded(AssetGroupID pWhichGroup) {
-		if (mCurrentGroup != pWhichGroup) {
+	void LoadGroupByName(string_static pGroupName, bool pUnloadOtherGroups = false) {
+		short pWhichGroup = uGetGroupIndexByName(pGroupName);
+		if (pWhichGroup == -1) {
+			SDL_Log("Failed to find group!");
+			return;
+		}
+		if (mCurrentGroup >= 0 && pUnloadOtherGroups) {
+			UnloadGroup(mCurrentGroup);
+		}
 
+		SDL_Log("Loading group...");
+		mCurrentGroup = pWhichGroup;
+
+		//SDL_Log("Trying to load assets...");
+		AssetGroup *g = &mGroups[pWhichGroup];
+		for (ushort i = 0; i < g->mAssets.size(); i++) {
+			//SDL_Log("Loading asset %d / %d", i + 1, g.mAssets.size());
+			if (g->mAssets[i].TryLoad()) {
+				g->mLoadedAssets++;
+				//SDL_Log("sizeof mAssets[%d]: %d", i, sizeof(g.mAssets[i].mData) );
+				mMemoryUsage += sizeof(g->mAssets[i].mData);
+			}
+			else {
+				SDL_Log("Warning: Failed to load asset for index %d! (filename: %s)", i, g->mAssets[i].mFileName);
+			}
+		}
+		SDL_Log("Loaded group! (memory usage: %d)", mMemoryUsage);
+
+
+		//return mLoadedAssets >= mAssetCount;
+	}
+
+	void EnsureGroupIsLoaded(ushort pWhichGroup, bool pUnloadOthers = false) {
+		if (mCurrentGroup != pWhichGroup || mGroups[pWhichGroup].mLoadedAssets == 0) {
+			LoadGroupByIndex(pWhichGroup, pUnloadOthers);
 		}
 	}
 
@@ -279,10 +309,17 @@ public:
 	}
 
 	void* GetAssetData(string_static pFileName) {
+		if (mCurrentGroup < 0) {
+			SDL_Log("Error: we don't have a current group!");
+			return nullptr;
+		}
 		SDL_Log("Getting asset data...");
-		AssetGroup& cur = mGroups[mCurrentGroup];
+		AssetGroup cur = mGroups[mCurrentGroup];
+		
+		SDL_Log("Target filename data: text : %s\nsize: %d (+1)", pFileName, SDL_strlen(pFileName));
 		for (byte i = 0; i < cur.mLoadedAssets; i++) {
-			Asset& curA = cur.mAssets[i];
+			Asset curA = mGroups[mCurrentGroup].mAssets.at(i);
+			SDL_Log("Asset %d data: text : %s\nsize: %d (+1)", i, pFileName, SDL_strlen(pFileName));
 			if (!SDL_strcmp(curA.mFileName, pFileName))
 				return curA.mData;
 		}

@@ -229,9 +229,13 @@ public:
 		pHeightPerEach = SDL_lroundf(mRect.h / sizeof(pNewElements));
 	}
 
+	virtual void OnChanged(ushort pIndex) {
+
+	}
+
 	void OnClicked() override {
 		pCurrentIndex = SDL_lroundf((GetMousePos().y - mRect.y) / pHeightPerEach); //Get offset from start
-
+		OnChanged(pCurrentIndex);
 	}
 
 	void Render() override {
@@ -262,6 +266,46 @@ public:
 	}
 
 	using Element::Element;
+};
+/*
+class eGroup : public Element {
+public:
+	std::vector<Element*> others;
+
+
+	void ChangeAllPosition(Vector2 pNewPos) {
+		for (Element* o : others) {
+			o->mRect.x += pNewPos.x;
+			o->mRect.y += pNewPos.y;
+		}
+	}
+	void ToggleAllVisibility(bool value) {
+		for (Element* o : others) {
+			o->uToggleVisibility();
+		}
+	}
+	void ToggleAllActivity(bool value) {
+		for (Element* o : others) {
+			o->uToggleActive();
+		}
+	}
+};
+*/
+
+
+class eImage : public Element {
+public:
+#if COMOPT_R_USE_HA
+	SDL_Texture* pImage = nullptr;
+#else
+	SDL_Surface* pImage = nullptr;
+#endif
+
+
+	void Render() override {
+		if (!pImage) return;
+		gEzRender->cRenderTexture(pImage, Rect(0, 0, pImage->w, pImage->h), mRect);
+	}
 };
 #pragma endregion
 

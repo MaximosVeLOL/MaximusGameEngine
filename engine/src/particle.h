@@ -7,7 +7,8 @@ class Particle {
 public:
 	Vector2 mPosition;
 	float mRotation = 0;
-	Sprite renderSprite;
+	Sprite mRenderSprite;
+	float mLifetime = -1.0f;
 };
 
 #endif

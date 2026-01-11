@@ -21,11 +21,11 @@ private:
 
 public
 
-	public void LoadSettings() {
+	void LoadSettings() {
 
 	}
 
-	public void SaveSettings() {
+	void SaveSettings() {
 	}
 };
 

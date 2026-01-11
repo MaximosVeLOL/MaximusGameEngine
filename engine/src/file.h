@@ -28,6 +28,20 @@ struct File {
 		return mCurrent != nullptr;
 	}
 
+	bool uCanRead() {
+		if (!mCurrent) return false;
+		return SDL_TellIO(mCurrent) <= mInfo.size;
+	}
+
+	Sint64 Tell() {
+		if (!mCurrent) return -1;
+		return SDL_TellIO(mCurrent);
+	}
+
+	void Seek(Sint64 pIndex, SDL_IOWhence pWhence = SDL_IO_SEEK_CUR) {
+		SDL_SeekIO(mCurrent, pIndex, pWhence);
+	}
+
 	string_static uGetFileName() {
 		char* returnValue = new char[filename_length];
 		memset(returnValue, '!', filename_length);
@@ -47,7 +61,7 @@ struct File {
 			returnValue_index++;
 		}
 		returnValue[returnValue_index] = '\0';
-		SDL_Log("uGetFileName: %s", returnValue);
+		//SDL_Log("uGetFileName: %s", returnValue);
 		return returnValue;
 	}
 
@@ -67,7 +81,18 @@ struct File {
 		return returnValue;
 	}
 
-
+	char ReadChar() {
+		if (!mCurrent) {
+			SDL_Log("Failed to read! (file isn't open)");
+		}
+		char returnValue = 0;
+		byte readBytes = static_cast<char>(SDL_ReadIO(mCurrent, &returnValue, 1));
+		if (readBytes != 1) {
+			SDL_Log("Failed to read! (read bytes not equal to what needed)");
+			return -128;
+		}
+		return returnValue;
+	}
 	byte ReadByte() {
 		if (!mCurrent) {
 			SDL_Log("Failed to read! (file isn't open)");
@@ -121,7 +146,7 @@ struct File {
 			return "INVALID";
 		}
 		char *returnValue = new char[length + 1];
-		memset(returnValue, '!', length + 1);
+		memset(returnValue, '\0', length + 1);
 		byte readBytes = SDL_ReadIO(mCurrent, returnValue, length);
 		if (readBytes != length) {
 			SDL_Log("Failed to read string (read bytes not equal to needed)");
@@ -209,6 +234,12 @@ struct File {
 		if (correctly < sizeof(value)) {
 			ERROR("Failed to write! (bytes written is less than bytes given)");
 		}
+	}
+	void Write(string_static format, ...) {
+		if (!mCurrent) {
+			ERROR("Failed to write! (file isn't open)");
+		}
+		SDL_IOprintf(mCurrent, format);
 	}
 
 	void OpenFile(string_static fileName, OperationMode mode) {

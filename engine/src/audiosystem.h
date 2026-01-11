@@ -18,7 +18,6 @@ struct Sound {
 
 class AudioSystem {
 private:
-	
 	MIX_Track* mTracks[8] = {nullptr};
 public:
 	MIX_Mixer* mMixer = nullptr;

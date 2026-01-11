@@ -33,67 +33,30 @@ void uImportWorldSpace(const char* pFileName) {
 #include "mgui.h"
 #include <vector>
 #include "input.h"
-enum Editor_Mode : byte  {
-	EDITOR_MODE_DEFAULT = 0,
-	EDITOR_MODE_PLACE, //When placing an object
-	EDITOR_MODE_EDIT, //When editing an object
-};
 
 
-enum ObjectID : byte {
-	OBJECT_ID_NONE = 0,
-	OBJECT_ID_PLAYER,
-	OBJECT_ID_COLLIDABLE,
-	OBJECT_ID_PLATFORM,
-	OBJECT_ID_LAST
-};
-
-class Editor_cMain : public Canvas {
-private:
-	void Export() {
-
-	}
-public:
-
-	Editor_Mode pMode = EDITOR_MODE_DEFAULT;
-	byte pSelectedObjectID = 0;
-	std::vector<ExportableMaxObject> pObjects;
 
 
-	ExportableMaxObject* uGetObjectHovering() {
-		Vector2 m = gInput->GetMousePos();
-		for (ExportableMaxObject& o : pObjects) {
-			if (m.x >= o.mStartPos.x && m.x <= o.mStartPos.x + o.mWidth && m.y >= o.mStartPos.y && m.y <= o.mStartPos.y + o.mHeight) {
-				return &o;
+namespace Editor {
+	class mModeList : public eList {
+	public:
+		void OnChanged(ushort pIndex) override {
+
+		}
+
+		mModeList() {
+			string_static vals[] = {
+				"Nigga",
+				"Nigga",
+				"Nigga",
 			}
 		}
-	}
-
-
-	void Update() {
-		if (gInput->GetMouseDown(SDL_BUTTON_LEFT)) {
-			switch (pMode) {
-			case EDITOR_MODE_DEFAULT:
-				break;
-
-			case EDITOR_MODE_PLACE:
-
-			case EDITOR_MODE_EDIT:
-
-				break;
-			}
+	};
+	
+	class MainCanvas : public Canvas {
+	public:
+		MainCanvas() {
+			AddElement
 		}
-	}
-
-
-	Editor_cMain() {
-		AddElement(new eWindow(50, 270, 200, 200));
-		AddElement(new eButton("Object Type", 100, 280, 50, 25));
-	}
-};
-
-void SetupEditor() {
-	gCurrentCanvas = new Editor_cMain();
-	gCurrentWorld = new World();
-
+	};
 }

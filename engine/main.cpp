@@ -16,6 +16,17 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
 	gEzRender = new EzRender();
 	gInput = new InputSystem();
 	gAudio = new AudioSystem();
+	gAssetHandler = new AssetHandler();
+	gAssetHandler->LoadGroupByName("Test");
+	
+	gCurrentCanvas = new Canvas();
+	eImage* test = new eImage();
+	SDL_Surface* image = (SDL_Surface*)gAssetHandler->GetAssetData("test.png");
+	SDL_assert(image);
+	test->pImage = SDL_CreateTextureFromSurface(gEzRender->mRenderer, image);
+	SDL_assert(test->pImage);
+	test->mRect = Rect(200, 200, 400, 400);
+	gCurrentCanvas->AddElement(test);
 
 	return SDL_APP_CONTINUE;
 }

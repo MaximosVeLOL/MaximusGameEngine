@@ -110,6 +110,10 @@ typedef TVector2<short> Vector2Short;
 struct Property {
 	string_static mName = "";
 	void* value = nullptr;
+
+	Property() {}
+	Property(string_static pName, void* pValue) : mName(pName), value(pValue) {}
+	
 };
 
 
