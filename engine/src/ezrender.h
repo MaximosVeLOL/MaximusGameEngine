@@ -2,11 +2,17 @@
 
 #include "common.h"
 #if !COMOPT_R_USE_HA
-#include "instance.h"
+#include "instance.h" //For getting the window surface
+#define NULL_WINDOW_CHECK if (!gInstance->mWindow) return
+#else
+
+#define NULL_RENDERER_CHECK if(!mRenderer) return
 #endif
 
-#include "sprite.h"
-#include "object.h"
+#include "sprite.h" //For sprite struct
+#include "world.h" //For Camera struct
+#include "object.h" //For MaxObject class
+
 
 /* This renderer is made to make rendering easier.
 * So if you don't want rendering, then its done!
@@ -89,6 +95,7 @@ public:
 		}
 
 #if COMOPT_R_USE_HA
+		
 		SDL_FRect compilerFix = r;
 		if (isFilled) {
 			
@@ -96,6 +103,7 @@ public:
 		}
 		else SDL_RenderRect(mRenderer, &compilerFix);
 #else
+		NULL_WINDOW_CHECK;
 		if (isFilled) {
 			SDL_Surface* s = SDL_CreateSurface(r.w, r.h, SDL_PIXELFORMAT_RGBA8888);
 			SDL_Rect rR = r;
@@ -116,6 +124,8 @@ public:
 	}
 #else
 	void cRenderTexture(SDL_Surface* in, Rect crop, Rect position, float rotation = 0.0f, SDL_FlipMode flipMode = SDL_FLIP_NONE) {
+		NULL_WINDOW_CHECK;
+
 		SDL_FlipSurface(in, flipMode);
 		//SDL_RotateSurface(); We need to wait for SDL 3.4.0, we are on 3.2.2
 		SDL_RotateSurface(in, rotation);
@@ -135,10 +145,10 @@ public:
 #endif
 	}
 
-	void cRenderObject(Vector2 pCameraPos, MaxObject *pObject) {
+	void cRenderObject(Camera* useCamera, MaxObject *pObject) {
 		Rect transAsRect = {
-			static_cast<int>(pObject->mTransform.position.x - pCameraPos.x),
-			static_cast<int>(pObject->mTransform.position.y - pCameraPos.y),
+			static_cast<int>(pObject->mTransform.position.x - useCamera->mPosition.x),
+			static_cast<int>(pObject->mTransform.position.y - useCamera->mPosition.y),
 			static_cast<int>(pObject->mTransform.width),
 			static_cast<int>(pObject->mTransform.height),
 		};

@@ -1,6 +1,6 @@
 #include "audiosystem.h"
 
-
+#if COMOPT_S_USE
 AudioSystem* gAudio = nullptr;
 
 AudioSystem::AudioSystem() {
@@ -19,3 +19,4 @@ AudioSystem::AudioSystem() {
 
 	gAudio = this;
 }
+#endif

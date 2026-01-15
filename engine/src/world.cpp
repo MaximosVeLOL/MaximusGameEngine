@@ -55,7 +55,7 @@ MaxObject* World::uGetObjectInPoint(Vector2 pPoint) {
 	}
 	return nullptr;
 }
-
+/*
 //Array of pointers, not 2D array.
 std::vector<MaxObject *> World::uGetObjectsInView() {
 	std::vector<MaxObject*> returnValue;
@@ -66,6 +66,7 @@ std::vector<MaxObject *> World::uGetObjectsInView() {
 	}
 	return returnValue;
 }
+*/
 
 void World::UpdateAllObjects() {
 	mTicks++;
@@ -75,7 +76,7 @@ void World::UpdateAllObjects() {
 	else return;
 
 
-	std::vector<MaxObject *> viewObjects = uGetObjectsInView();
+	//std::vector<MaxObject *> viewObjects = uGetObjectsInView();
 	Vector2 top;
 	for (olimit i = 0; i < mObjectCount; i++) {
 		MaxObject& cur = *mObjects[i];
@@ -85,7 +86,7 @@ void World::UpdateAllObjects() {
 
 		
 		//Only collide with other objects in view
-#if true //Use view objects
+#if false //Use view objects
 		for (MaxObject* other : viewObjects) {
 #else
 		for (ushort i = 0; i < mObjectCount; i++) {
@@ -133,10 +134,12 @@ void World::RenderAllObjects() {
 	if (!gEzRender)
 		return;
 	gEzRender->cSetDrawColor(0, 255, 0, 255);
-	for (olimit i = 0; i < mObjectCount; i++) {
-		//gEzRender->cRenderRect(mObjects[i]->mTransform, true);
-		gEzRender->cRenderObject(mCameraPosition, mObjects[i] );
-		mObjects[i]->OnRender();
+	for (climit c = 0; c < mCameraCount; c++) {
+		for (olimit i = 0; i < mObjectCount; i++) {
+			//gEzRender->cRenderRect(mObjects[i]->mTransform, true);
+			gEzRender->cRenderObject(&mCameras[c], mObjects[i]);
+			mObjects[i]->OnRender();
+		}
 	}
 }
 

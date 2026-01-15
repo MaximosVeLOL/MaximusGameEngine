@@ -38,25 +38,8 @@ void uImportWorldSpace(const char* pFileName) {
 
 
 namespace Editor {
-	class mModeList : public eList {
-	public:
-		void OnChanged(ushort pIndex) override {
 
-		}
+	namespace ObjectEditor {
 
-		mModeList() {
-			string_static vals[] = {
-				"Nigga",
-				"Nigga",
-				"Nigga",
-			}
-		}
-	};
-	
-	class MainCanvas : public Canvas {
-	public:
-		MainCanvas() {
-			AddElement
-		}
-	};
+	}
 }

@@ -38,9 +38,9 @@ public:
 	byte mMouseState = SDL_BUTTON_LEFT;
 	byte mPreviousMouseState = SDL_BUTTON_LEFT;
 
-	Vector2 GetMousePos(bool gamePos = true) {
-		if (gamePos && gCurrentWorld) {
-			return Vector2(mMouseX + gCurrentWorld->mCameraPosition.x, mMouseY + gCurrentWorld->mCameraPosition.y);
+	Vector2 GetMousePos(Camera* whichCamera = nullptr) {
+		if (whichCamera) {
+			return Vector2(mMouseX + whichCamera->mPosition.x, mMouseY + whichCamera->mPosition.y);
 		}
 		else return Vector2(mMouseX, mMouseY);
 	}

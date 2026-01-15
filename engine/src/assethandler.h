@@ -1,3 +1,4 @@
+
 #ifndef __ASSET_HANDLER_H__
 #define __ASSET_HANDLER_H__
 
@@ -15,12 +16,15 @@
 
 */
 
-#include "common.h"
-#include "file.h"
-#include "audiosystem.h"
-#include "ezrender.h"
-#include "sprite.h"
-#include <vector>
+#include "common.h" //For typedefs, and gEzRender.
+
+#if COMOPT_A_USE
+
+#include "file.h" //For file operations
+#include "audiosystem.h" //Sounds
+#include "ezrender.h" //For mRenderer
+#include "sprite.h" //For sprites
+#include <vector> //For the loaded assets/asset groups
 
 extern string_static uGetRootDirectory();
 extern string_static uGetGraphicsDirectory();
@@ -38,7 +42,9 @@ extern void LoadResources();
 
 struct DefaultAssets {
 	SDL_Surface* mTexture = nullptr;
+#if COMOPT_S_USE
 	MIX_Audio* mAudio = nullptr;
+#endif
 	Sprite* mSprite = nullptr;
 
 };
@@ -65,9 +71,11 @@ struct Asset {
 
 	void LoadDefault() {
 		switch (mType) {
+#if COMOPT_S_USE
 		case ASSET_TYPE_AUDIO:
 			mData = mDefault.mAudio;
 			break;
+#endif
 		case ASSET_TYPE_IMAGE:
 			mData = mDefault.mTexture;
 			break;
@@ -105,11 +113,13 @@ struct Asset {
 			return false;
 		}
 		switch (mType) {
+#if COMOPT_S_USE
 		case ASSET_TYPE_AUDIO:
 			mData = new MIX_Audio*;
 			mData = (void*)MIX_LoadAudio_IO(gAudio->mMixer, file.mCurrent, true, false);
 			if (!mData) { LoadDefault(); return false; }
 			break;
+#endif
 		case ASSET_TYPE_IMAGE:
 			mData = SDL_LoadPNG_IO(file.mCurrent, false);
 			if (!mData) { LoadDefault(); return false; }
@@ -331,4 +341,5 @@ public:
 
 extern AssetHandler* gAssetHandler;
 
-#endif
+#endif //COMOPT_A_USE
+#endif //__ASSET_HANDLER_H__

@@ -12,35 +12,34 @@ bool MouseIsOver(Rect rect) {
 }
 
 Vector2 GetMousePos() {
+	if (!gInput) return Vector2();
 	return gInput->GetMousePos();
 }
 
 void Canvas::UpdateElements() {
 	for (ushort i = 0; i < mUsedElements; i++) {
-		Element *cur = mElements[i];
-		if (MouseIsOver(cur->mRect)) {
-			cur->mMouseOver = true;
-			if (cur->mIsActive) {
-				cur->mRenderColor = STYLE.backgroundHighlighted;
+		if (MouseIsOver(mElements[i]->mRect)) {
+			mElements[i]->mMouseOver = true;
+			if (mElements[i]->mIsActive) {
+				mElements[i]->mRenderColor = STYLE.backgroundHighlighted;
 				if (gInput->GetMouseDown(SDL_BUTTON_LEFT)) {
-					cur->OnClicked();
+					mElements[i]->OnClicked();
 
 				}
 			}
 		}
 		else {
-			cur->mRenderColor = STYLE.background;
-			cur->mMouseOver = false;
+			mElements[i]->mRenderColor = STYLE.background;
+			mElements[i]->mMouseOver = false;
 		}
-		cur->Update();
+		mElements[i]->Update();
 
 	}
 }
 
 void Canvas::RenderElements() {
 	for (ushort i = 0; i < mUsedElements; i++) {
-		Element* cur = mElements[i];
-		if (cur->mVisible) cur->Render();
+		if (mElements[i]->mVisible) mElements[i]->Render();
 	}
 }
 

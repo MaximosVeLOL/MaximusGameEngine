@@ -1,29 +1,39 @@
 #define SDL_MAIN_USE_CALLBACKS 1
 
-#include "src/common.h"
+
+#include <SDL3/SDL_main.h>
 #include "src/instance.h"
 #include "src/ezrender.h"
-#include "src/world.h"
-#include "src/object.h"
-#include "src/input.h"
 #include "src/mgui.h"
-#include "src/assethandler.h"
+#include "src/common.h"
+#include "src/world.h"
 #include "src/audiosystem.h"
-#include <SDL3/SDL_main.h>
+#include "src/input.h"
+#include "src/assethandler.h"
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
 	gInstance = new Instance();
+#if COMOPT_R_USE
 	gEzRender = new EzRender();
+#endif
+
+#if COMOPT_I_USE
 	gInput = new InputSystem();
+#endif
+#if COMOPT_S_USE
 	gAudio = new AudioSystem();
+#endif
+
+#ifdef COMOPT_A_USE
 	gAssetHandler = new AssetHandler();
+#endif
 	gAssetHandler->LoadGroupByName("Test");
-	
 	gCurrentCanvas = new Canvas();
 	eImage* test = new eImage();
 	SDL_Surface* image = (SDL_Surface*)gAssetHandler->GetAssetData("test.png");
 	SDL_assert(image);
-	test->pImage = SDL_CreateTextureFromSurface(gEzRender->mRenderer, image);
+	test->pImage = image;
+	//test->pImage = SDL_CreateTextureFromSurface(gEzRender->mRenderer, image);
 	SDL_assert(test->pImage);
 	test->mRect = Rect(200, 200, 400, 400);
 	gCurrentCanvas->AddElement(test);

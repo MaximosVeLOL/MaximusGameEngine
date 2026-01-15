@@ -1,7 +1,10 @@
+
+
+
 #ifndef __AUDIO_SYSTEM_H__
 #define __AUDIO_SYSTEM_H__
-
 #include "common.h"
+#if COMOPT_S_USE
 #include <SDL3_mixer/SDL_mixer.h>
 
 
@@ -35,4 +38,5 @@ public:
 
 extern AudioSystem* gAudio;
 
-#endif
+#endif //COMOPT_S_USE
+#endif //__AUDIO_SYSTEM_H__

@@ -17,26 +17,6 @@ void Instance::DoRendering() {
 }
 
 void Instance::Update() {
-#if COMOPT_C_CLIENT
-	if (mErrorHasOccured) {
-		SDL_SetWindowTitle(mWindow, "An error has occured!");
-#if COMOPT_R_USE_HA
-		gEzRender->cSetDrawColor(255);
-		gEzRender->RenderClear();
-		gEzRender->cSetDrawColor();
-		SDL_RenderDebugText(gEzRender->mRenderer, mWidth / 2, mHeight / 2, "An error has occured, please restart the app.");
-		gEzRender->RenderEnd();
-		return;
-#endif //Use HA
-
-
-	}
-#endif //Client
-
-
-	static uint pCurrentFPS = 0;
-	if (mStartingTicks == 0) mStartingTicks = SDL_GetTicks();
-	pCurrentFPS++;
 
 	//Run stuff here
 	if (gCurrentWorld) {
@@ -50,21 +30,6 @@ void Instance::Update() {
 	}
 
 	DoRendering();
-
-
-	mCurrentTicks = SDL_GetTicks();
-	if (mCurrentTicks - mStartingTicks >= 1000) {
-		//SDL_Log("Frames in one second: %d", pCurrentFPS);
-		string_easy asStr = std::to_string(pCurrentFPS);
-#if COMOPT_C_CLIENT
-		SDL_SetWindowTitle(mWindow, asStr.c_str());
-#endif
-		mFPS = pCurrentFPS;
-		mStartingTicks = 0;
-		pCurrentFPS = 0;
-		
-
-	}
 
 	SDL_Delay(16);
 

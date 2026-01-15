@@ -9,23 +9,12 @@ private:
 	ulong mStartingTicks = 0;
 	ulong mCurrentTicks = 0;
 
-	bool mFPSLimit_Use = false;
-	ushort mFPSLimit_Limit = 60;
-
-	uint mFPS = 60;
-
-	bool mErrorHasOccured = false;
 public:
 #if COMOPT_C_CLIENT
 	SDL_Window* mWindow = nullptr;
 	ushort mWidth = 0;
 	ushort mHeight = 0;
 #endif
-
-
-	uint GetFPS() {
-		return mFPS;
-	}
 
 	void UpdateWindowInformation() {
 #if COMOPT_C_CLIENT
@@ -36,19 +25,10 @@ public:
 #endif
 	}
 
-	float GetDeltaTime() {
-		//SDL_Log("Delta time: %f", 1 / static_cast<float>(mFPS));
-		return 1 / static_cast<float>(mFPS);
-	}
-
 	void DoRendering();
 
 
 	void Update();
-
-	void ErrorHandle() {
-		mErrorHasOccured = true;
-	}
 
 	Instance();
 };

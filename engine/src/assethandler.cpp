@@ -1,16 +1,18 @@
 #include "assethandler.h"
 
 
-
+#ifdef COMOPT_A_USE
 DefaultAssets mDefault;
 void InitializeDefaultTextures() {
 	File f;
 	f.OpenFileFormatted(o_read, "%s/invalid.png", uGetGraphicsDirectory());
 	mDefault.mTexture = SDL_LoadPNG_IO(f.mCurrent, false);
 	f.Close();
+#if COMOPT_S_USE
 	f.OpenFileFormatted(o_read, "%s/invalid.wav", uGetGraphicsDirectory() );
 	mDefault.mAudio = MIX_LoadAudio_IO(gAudio->mMixer, f.mCurrent, true, false);
 	f.Close();
+#endif
 	mDefault.mSprite = new Sprite();
 #if COMOPT_R_USE_HA
 	mDefault.mSprite->mTexturePage = SDL_CreateTextureFromSurface(gEzRender->mRenderer, mDefault.mTexture);
@@ -196,3 +198,4 @@ AssetHandler::AssetHandler() {
 }
 
 
+#endif

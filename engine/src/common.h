@@ -7,10 +7,19 @@
 #pragma region Compiler options
 
 //Use hardware acceleration
-#define COMOPT_R_USE_HA 1
+#define COMOPT_R_USE_HA 0
+//Use rendering functionality?
 #define COMOPT_R_USE 1
+//Use audio functionality?
+#define COMOPT_S_USE 1
+
+//Are we a client (local things, a window to render in, ect.)
 #define COMOPT_C_CLIENT 1
-#define COMOPT_C_USE_ASSET 1
+//Use asset manager?
+#define COMOPT_A_USE 1
+
+//Use Input system?
+#define COMOPT_I_USE 1
 
 #pragma endregion
 

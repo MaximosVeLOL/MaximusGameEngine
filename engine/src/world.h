@@ -6,36 +6,38 @@ class MaxObject;
 
 typedef uint olimit;
 constexpr olimit OBJECT_LIMIT = 10000;
+typedef byte climit;
+constexpr climit CAMERA_LIMIT = 10;
 
-
-
-class WorldSpace {
-public:
-
-	MaxObject* staticObjects;
-	
-
-	//When we need to load assets needed
-	virtual void Precache() {
-
-	}
+struct Camera {
+	Vector2 mViewOffset;
+	Vector2 mPosition;
+	bool mIsActive = true;
+	ushort mWidth = 960;
+	ushort mHeight = 540;
 };
 
 
-
-
 class World {
+
+	friend class WorldSpace;
+
 	MaxObject* mObjects[OBJECT_LIMIT] = { nullptr };
+	olimit mObjectCount = 0;
 
 	float mGravity = 0.25;
 
 	ushort mTickRate = 0;
 	ushort mTicks = 0;
 
-public:
-	olimit mObjectCount = 0;
+	uint mWidth = 0;
+	uint mHeight = 0;
 
-	Vector2 mCameraPosition;
+	Camera mCameras[CAMERA_LIMIT] = {Vector2()};
+	climit mCameraCount = 0;
+	
+public:
+	
 
 	Color mBGColor = {
 		0,
@@ -43,6 +45,8 @@ public:
 		0,
 		255
 	};
+
+
 
 	void AddObject(MaxObject* object);
 
@@ -57,11 +61,6 @@ public:
 
 	World();
 
-};
-
-struct StaticMaxObject {
-	const char* ID = "";
-	Vector2 position;
 };
 
 extern World* gCurrentWorld;
